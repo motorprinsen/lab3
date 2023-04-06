@@ -43,4 +43,4 @@ Feature: VG tests for SVT Play
 
   Scenario: Program listed as "Sista chansen" should display an overlay
     When a user clicks on a program in the "Sista chansen" section
-    Then the program should display an overlay on hthe time left to view it
+    Then the program should display an overlay indicating the time left to view it
