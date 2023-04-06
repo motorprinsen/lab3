@@ -6,16 +6,16 @@ Feature: VG tests for SVT Play
     And accepts the cookie consent dialog
 
   Scenario: No newsletter registration without email address
-    When a user clicks on the link "Nyhetsbrev"
+    When a user clicks on the newsletter link ("Nyhetsbrev")
     But does not enter an email address
-    And clicks the "Prenumerera" button
+    And clicks the sign-up button ("Prenumerera")
     Then the error message "Du måste ange en giltig e-postaddress!" should show
 
   Scenario: No newsletter registration without consent
-    When a user clicks on the link "Nyhetsbrev"
+    When a user clicks on the newsletter link ("Nyhetsbrev")
     And enter an email address
     But does not tick the consent box
-    And clicks the "Prenumerera" button
+    And clicks the sign-up button ("Prenumerera")
     Then the error message "Du måste godkänna våra villkor för att kunna prenumerera!" should show
 
   Scenario: Current programs should reflect the current time
@@ -38,7 +38,7 @@ Feature: VG tests for SVT Play
   Scenario: Fullscreen video player
     When a user clicks on the first available program
     And starts the video player
-    And clicks the "Fullskärm" button
+    And clicks the fullscreen button ("Fullskärm")
     Then the player should be shown fullscreen
 
   Scenario: Program listed as "Sista chansen" should display an overlay
