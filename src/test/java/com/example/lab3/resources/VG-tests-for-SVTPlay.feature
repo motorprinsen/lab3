@@ -1,18 +1,46 @@
 Feature: VG tests for SVT Play
 
-  TODO:
-  1. Nyhetsbrev: Enter email address but don't tick the terms/age box
-  2. Kanaler: Check that the correct time is shown
-  3. Program med kommande program (Bäst i test): Navigate to show, find "Kommande" and verify that more episodes are shown
-  4. Program: Verify that only shows starting with A is listed under A (loop through to ö) and that shows with numbers are beneath #
-  5. Kanaler: Find a show that should have started and verify the progress bar
-  6. Kanaler: Pick a date a bit into the future and verify that "Det finns ingen tablå för valt datum" is displayed
-  7. Click on a movie under "Filmtips" and verify that popup is shown
-  8. Verify fullscreen in player
-
   Background:
     Given SVT Play is available
+    And a user navigates to start page
+    And accepts the cookie consent dialog
 
-  Scenario: SVT Play should show correct title
-    When User visits SVT Play
-    Then The title should be "SVT Play"
+  Scenario: No newsletter registration without email address
+    When a user clicks on the link "Nyhetsbrev"
+    But does not enter an email address
+    And clicks the "Prenumerera" button
+    Then the error message "Du måste ange en giltig e-postaddress!" should show
+
+  Scenario: No newsletter registration without consent
+    When a user clicks on the link "Nyhetsbrev"
+    And enter an email address
+    But does not tick the consent box
+    And clicks the "Prenumerera" button
+    Then the error message "Du måste godkänna våra villkor för att kunna prenumerera!" should show
+
+  Scenario: Current programs should reflect the current time
+    When a user clicks on "Kanaler"
+    Then the first listed program should have a start time before the current time
+
+  Scenario: Verify program listings
+    When a user clicks on "Program"
+    Then all programs should be listed correctly and according to the first letter in the program name
+
+  Scenario: Search should return relevant results
+    When a user searches for "bäst i test"
+    Then the first listed program should be "Bäst i test"
+
+  Scenario: Search for random letters should not return any results
+    When a user searches for "qwerty"
+    Then no results should be shown
+    And the text "Inget resultat för sökningen "qwerty"" should be shown
+
+  Scenario: Fullscreen video player
+    When a user clicks on the first available program
+    And starts the video player
+    And clicks the "Fullskärm" button
+    Then the player should be shown fullscreen
+
+  Scenario: Program listed as "Sista chansen" should display an overlay
+    When a user clicks on a program in the "Sista chansen" section
+    Then the program should display an overlay on hthe time left to view it
