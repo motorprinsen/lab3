@@ -55,5 +55,4 @@ Feature: Test SVT Play
   Scenario: Searching for empty text should yield no results
     When a user visits SVT Play
     And searches for without entering a search term
-    Then the text "Inga sökträffar." should be shown
-    
+    Then the result "Inga sökträffar." should be shown

@@ -1,16 +1,10 @@
 package com.example.lab3;
 
-import io.cucumber.java.After;
-import io.cucumber.java.Before;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.json.JSONException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.html5.WebStorage;
 import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -19,72 +13,26 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
+import static com.example.lab3.Driver.driver;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GTestsStepDefinitions {
 
-    private static WebDriver driver;
     private static final int toWait = 5;
-    private static final String svtPlayUrl = "https://www.svtplay.se/";
-
-    @Before
-    public static void setup() {
-        var options = new ChromeOptions();
-        options.addArguments("--remote-allow-origins=*", "--incognito");
-        driver = new ChromeDriver(options);
-    }
-
-    private static void acceptCookieConsentDialog() {
-        // The modal takes a couple of seconds to show up
-        var modalXpath = "//div[@data-rt='cookie-consent-modal']";
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
-                .until(ExpectedConditions.visibilityOfElementLocated(By.xpath(modalXpath)));
-
-        // Accept the default settings
-        var modal = driver.findElement(By.xpath(modalXpath));
-        var consentButton = modal.findElement(By.xpath(".//button[text() = 'Acceptera alla']"));
-        consentButton.click();
-
-        // The modal takes a couple of seconds to close after accepting
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
-                .until(ExpectedConditions.invisibilityOfElementLocated(By.xpath(modalXpath)));
-    }
-
-    @After
-    public static void teardown() {
-        driver.quit();
-    }
-
-    @Given("SVT Play is available")
-    public void svt_play_is_available() {
-        driver.get(svtPlayUrl);
-        driver.manage().window().maximize();
-    }
-
-    @Given("a user navigates to start page")
-    public void a_user_navigates_to_start_page() {
-        driver.get(svtPlayUrl);
-    }
-
-    @Given("accepts the cookie consent dialog")
-    public void accepts_the_cookie_consent_dialog() {
-        acceptCookieConsentDialog();
-    }
 
     @When("a user visits SVT Play")
     public void a_user_visits_svt_play() {
-        assertTrue(driver.getTitle().endsWith("SVT Play"), "We are not at SVT Play");
+        assertTrue(driver().getTitle().endsWith("SVT Play"), "We are not at SVT Play");
     }
 
     @Then("the title should be {string}")
     public void the_title_should_be(String title) {
-        var expectedTitle = "SVT Play";
-        assertEquals(expectedTitle, driver.getTitle(), "Incorrect title is shown");
+        assertEquals(title, driver().getTitle(), "Incorrect title is shown");
     }
 
     @Then("the logo should be displayed")
     public void the_logo_should_be_displayed() {
-        var logo = driver.findElement(By.tagName("svg"));
+        var logo = driver().findElement(By.tagName("svg"));
 
         assertTrue(logo.isDisplayed(), "No logo is displayed");
     }
@@ -94,19 +42,19 @@ public class GTestsStepDefinitions {
         // Actual values are Pascal cased but then upper-cased through CSS
         expectedStartText = expectedStartText.toUpperCase();
         var startTextXpath = "//li[@type='start']/a";
-        var startText = driver.findElement(By.xpath(startTextXpath));
+        var startText = driver().findElement(By.xpath(startTextXpath));
 
         assertEquals(expectedStartText, startText.getText(), "Wrong text on 'Start' link");
 
         expectedProgramsText = expectedProgramsText.toUpperCase();
         var expectedProgramsXpath = "//li[@type='programs']/a";
-        var programsText = driver.findElement(By.xpath(expectedProgramsXpath));
+        var programsText = driver().findElement(By.xpath(expectedProgramsXpath));
 
         assertEquals(expectedProgramsText, programsText.getText(), "Wrong text on 'Program' link");
 
         expectedChannelsText = expectedChannelsText.toUpperCase();
         var expectedChannelsXpath = "//li[@type='channels']/a";
-        var channelsText = driver.findElement(By.xpath(expectedChannelsXpath));
+        var channelsText = driver().findElement(By.xpath(expectedChannelsXpath));
 
         assertEquals(expectedChannelsText, channelsText.getText(), "Wrong text on 'Kanaler' link");
     }
@@ -114,7 +62,7 @@ public class GTestsStepDefinitions {
     @Then("the link to the availability page should be visible")
     public void the_link_to_the_availability_page_should_be_visible() {
         var linkXpath = "//a[@href='https://kontakt.svt.se/guide/tillganglighet']";
-        var link = driver.findElement(By.xpath(linkXpath));
+        var link = driver().findElement(By.xpath(linkXpath));
 
         assertTrue(link.isDisplayed(), "No availability link displayed");
     }
@@ -122,7 +70,7 @@ public class GTestsStepDefinitions {
     @Then("the link text should be {string}")
     public void the_link_text_should_be(String expectedLinkText) {
         var linkXpath = "//a[@href='https://kontakt.svt.se/guide/tillganglighet']";
-        var link = driver.findElement(By.xpath(linkXpath));
+        var link = driver().findElement(By.xpath(linkXpath));
 
         // Selenium cannot CSS select using compound class names,
         // so we work around it by concatenating the names
@@ -135,13 +83,13 @@ public class GTestsStepDefinitions {
         var linkXpath = "//a[@href='https://kontakt.svt.se/guide/tillganglighet']";
 
         // Navigate to the availability site
-        driver.findElement(By.xpath(linkXpath)).click();
+        driver().findElement(By.xpath(linkXpath)).click();
     }
 
     @Then("the heading should be {string}")
     public void the_heading_should_be(String expectedHeading) {
         // Grab the heading
-        var heading = driver.findElement(By.tagName("h1"));
+        var heading = driver().findElement(By.tagName("h1"));
         assertEquals(expectedHeading, heading.getText(), "Wrong heading on availability page");
     }
 
@@ -151,7 +99,7 @@ public class GTestsStepDefinitions {
         page += "s";
         // Navigate to the page
         var linkXpath = "//li[@type='" + page.toLowerCase() + "']/a";
-        driver.findElement(By.xpath(linkXpath)).click();
+        driver().findElement(By.xpath(linkXpath)).click();
     }
 
     @Then("the number of categories displayed should be {int}")
@@ -159,9 +107,9 @@ public class GTestsStepDefinitions {
         var categoriesXpath = "//article";
 
         // Get the actual categories
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.xpath(categoriesXpath)));
-        var actualCategories = driver.findElements(By.xpath(categoriesXpath)).size();
+        var actualCategories = driver().findElements(By.xpath(categoriesXpath)).size();
 
         assertEquals(expectedCategories, actualCategories, "Wrong number of categories displayed");
     }
@@ -174,11 +122,11 @@ public class GTestsStepDefinitions {
         // Try to get the raw cookie
         Cookie rawCookie = null;
         try {
-            rawCookie = new WebDriverWait(driver, Duration.ofSeconds(toWait))
+            rawCookie = new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                     .until(
                             (ExpectedCondition<Cookie>) webDriver -> {
                                 // We either return the actual cookie or null if not found
-                                return driver.manage().getCookieNamed(cookieName);
+                                return driver().manage().getCookieNamed(cookieName);
                             }
                     );
 
@@ -209,30 +157,30 @@ public class GTestsStepDefinitions {
 
         // Navigate to the Settings page
         var settingsLinkXpath = "//a[@class='sc-5b00349a-0 hwpvwu sc-87f10045-4 imzlFR' and @href='/installningar']";
-        driver.findElement(By.xpath(settingsLinkXpath)).click();
+        driver().findElement(By.xpath(settingsLinkXpath)).click();
 
         // Open the cookie consent dialog
         var cookieButtonClass = ".sc-5b00349a-2.hLpVUw";
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(cookieButtonClass)));
-        driver.findElement(By.cssSelector(cookieButtonClass)).click();
+        driver().findElement(By.cssSelector(cookieButtonClass)).click();
 
         // Wait for ad storage option to show up
         var adStorageId = "play_cookie_consent_ad_storage";
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.id(adStorageId)));
 
         // Toggle the ad storage consent switch
         var consentSwitchXpath = "//label[@for='play_cookie_consent_ad_storage']";
-        driver.findElement(By.xpath(consentSwitchXpath)).click();
+        driver().findElement(By.xpath(consentSwitchXpath)).click();
 
         // Save the new cookie preferences
         var saveButtonSelector = ".sc-5b00349a-2.fuGbXH.sc-4f221cd2-9.hEiUxP";
-        driver.findElement(By.cssSelector(saveButtonSelector)).click();
+        driver().findElement(By.cssSelector(saveButtonSelector)).click();
 
         // The modal takes a couple of seconds to close after accepting
         var modalXpath = "//div[@data-rt='cookie-consent-modal']";
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.invisibilityOfElementLocated(By.xpath(modalXpath)));
 
 
@@ -262,11 +210,11 @@ public class GTestsStepDefinitions {
         // Try to get the updated cookie
         Cookie rawCookie = null;
         try {
-            rawCookie = new WebDriverWait(driver, Duration.ofSeconds(toWait))
+            rawCookie = new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                     .until(
                             (ExpectedCondition<Cookie>) webDriver -> {
                                 // We either return the actual cookie or null if not found
-                                return driver.manage().getCookieNamed(cookieName);
+                                return driver().manage().getCookieNamed(cookieName);
                             }
                     );
 
@@ -298,20 +246,20 @@ public class GTestsStepDefinitions {
     @When("sets a child protection pin code")
     public void sets_a_child_protection_pin_code() {
         // Navigate to the Settings page.
-        driver.findElement(By.linkText("Inställningar".toUpperCase())).click();
+        driver().findElement(By.linkText("Inställningar".toUpperCase())).click();
 
         // Toggle the child protection switch
         var childProtectionSwitchXpath = "//label[@data-rt='child-protection-switch']";
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.xpath(childProtectionSwitchXpath)));
-        driver.findElement(By.xpath(childProtectionSwitchXpath)).click();
+        driver().findElement(By.xpath(childProtectionSwitchXpath)).click();
 
         // The pin code must be four digits.
         // If we only enter three, the "Activate" button shouldn't be available.
-        var input = driver.findElement(By.id("play_settings-parental-control-input"));
+        var input = driver().findElement(By.id("play_settings-parental-control-input"));
         input.sendKeys("111");
 
-        var button = driver.findElement(By.xpath("//button[@data-rt='child-protection-password-activate']"));
+        var button = driver().findElement(By.xpath("//button[@data-rt='child-protection-password-activate']"));
         assertFalse(button.isEnabled(), "Button is enabled when only three digits have been entered");
 
         // Set the last digit of the code and verify that the button is enabled
@@ -325,26 +273,26 @@ public class GTestsStepDefinitions {
     @Then("age restricted programs do not play")
     public void age_restricted_programs_do_not_play() {
         // Search for a known program that has age restrictions.
-        var searchText = driver.findElement(By.xpath("//input[@data-rt='combobox-input']"));
+        var searchText = driver().findElement(By.xpath("//input[@data-rt='combobox-input']"));
         searchText.sendKeys("detektiven från beledweyne");
         searchText.submit();
 
         // Navigate to the program page
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//main/section/div/ul/li[1]/article/a")));
-        var seriesLink = driver.findElement(By.xpath("//main/section/div/ul/li[1]/article/a"));
+        var seriesLink = driver().findElement(By.xpath("//main/section/div/ul/li[1]/article/a"));
         seriesLink.click();
 
         // Try to play the first episode
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[@data-rt='top-area-play-button']")));
-        var playFirstEpisode = driver.findElement(By.xpath("//a[@data-rt='top-area-play-button']"));
+        var playFirstEpisode = driver().findElement(By.xpath("//a[@data-rt='top-area-play-button']"));
         playFirstEpisode.click();
 
         // The "Unsuitable for children" dialog should appear
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@role='alertdialog']/h2")));
-        var alert = driver.findElement(By.xpath("//div[@role='alertdialog']/h2"));
+        var alert = driver().findElement(By.xpath("//div[@role='alertdialog']/h2"));
 
         var expectedWarningText = "Detta program är olämpligt för barn";
         assertEquals(expectedWarningText, alert.getText(),
@@ -354,7 +302,7 @@ public class GTestsStepDefinitions {
     @When("disables autoplay")
     public void disables_autoplay() {
         // Get hold of the LocalStorage implementation
-        var webStorage = (WebStorage) new Augmenter().augment(driver);
+        var webStorage = (WebStorage) new Augmenter().augment(driver());
         var localStorage = webStorage.getLocalStorage();
 
         var expectedInitialAutoplayEnabled = true;
@@ -370,19 +318,19 @@ public class GTestsStepDefinitions {
         assertEquals(expectedInitialAutoplayEnabled, autoplayEnabled, "Wrong default autoplay setting");
 
         // Navigate to the Settings page.
-        driver.findElement(By.linkText("Inställningar".toUpperCase())).click();
+        driver().findElement(By.linkText("Inställningar".toUpperCase())).click();
 
         // Toggle the autoplay switch
         var autoplaySwitchClassName = "jmdfsN";
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.className(autoplaySwitchClassName)));
-        driver.findElement(By.className(autoplaySwitchClassName)).click();
+        driver().findElement(By.className(autoplaySwitchClassName)).click();
     }
 
     @Then("autoplay should be disabled")
     public void autoplay_should_be_disabled() {
         // Get hold of the LocalStorage implementation
-        var webStorage = (WebStorage) new Augmenter().augment(driver);
+        var webStorage = (WebStorage) new Augmenter().augment(driver());
         var localStorage = webStorage.getLocalStorage();
 
         var expectedAutoplayEnabled = false;
@@ -403,28 +351,28 @@ public class GTestsStepDefinitions {
     @When("selects a program with visual aid")
     public void selects_a_program_with_visual_aid() {
         // Navigate to the Programs page
-        driver.findElement(By.linkText("Program".toUpperCase())).click();
+        driver().findElement(By.linkText("Program".toUpperCase())).click();
 
         // Find and click the "Visual aid" link
         var visualAidLinkText = "Syntolkat";
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.linkText(visualAidLinkText)));
-        driver.findElement(By.linkText(visualAidLinkText)).click();
+        driver().findElement(By.linkText(visualAidLinkText)).click();
 
         // Find the first available program and navigate to it
         var firstShowXpath = "//main/descendant::article[1]";
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.xpath((firstShowXpath))));
-        driver.findElement(By.xpath(firstShowXpath)).click();
+        driver().findElement(By.xpath(firstShowXpath)).click();
     }
 
     @Then("a link with the text {string} should be shown")
     public void a_link_with_the_text_should_be_shown(String linkText) {
         // Check that the option to view the program without aid id displayed.
         // This indicates that the current program is in "visual aid" mode.
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.linkText(linkText)));
-        var noVisualAid = driver.findElement(By.linkText(linkText));
+        var noVisualAid = driver().findElement(By.linkText(linkText));
 
         assertTrue(noVisualAid.isDisplayed(),
                 "No 'visual aid' available although we selected a program that has it");
@@ -434,19 +382,19 @@ public class GTestsStepDefinitions {
     public void searches_for_without_entering_a_search_term() {
         // Click/submit an empty search
         var searchFormXpath = "//button[@type='submit']";
-        driver.findElement(By.xpath(searchFormXpath)).click();
+        driver().findElement(By.xpath(searchFormXpath)).click();
     }
 
-    @Then("the text {string} should be shown")
-    public void the_text_should_be_shown(String expectedResultText) {
+    @Then("the result {string} should be shown")
+    public void the_result_should_be_shown(String expectedResultText) {
         // Verify that no programs were found
         var mainElementId = "play_main-content";
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.id(mainElementId)));
-        var mainElement = driver.findElement(By.id(mainElementId));
+        var mainElement = driver().findElement(By.id(mainElementId));
 
         var paragraphXpath = "//section/div/p[1]";
-        new WebDriverWait(driver, Duration.ofSeconds(toWait))
+        new WebDriverWait(driver(), Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.xpath(paragraphXpath)));
         var actualResultText = mainElement.findElement(By.xpath(paragraphXpath)).getText();
 
