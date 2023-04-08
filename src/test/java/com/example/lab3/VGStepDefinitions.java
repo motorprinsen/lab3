@@ -158,8 +158,20 @@ public class VGStepDefinitions {
         var listingId = "play_main-content";
         new WebDriverWait(driver, Duration.ofSeconds(toWait))
                 .until(ExpectedConditions.visibilityOfElementLocated(By.id(listingId)));
-
         var mainSection = driver.findElement(By.id(listingId));
+
+        // This is one of the things I find really quirky with Selenium:
+        // I implemented the test, it passed and I moved on to the next test.
+        // When all tests are written, I run all the tests in sequence, and then this test starts to fail.
+        // The xpath that worked 30 minutes ago doesn't work anymore. And explicitly wait doesn't help either.
+        // But it works fine when I debug (of course).
+        // So the only way to get it to pass is to do the ugly, and not recommended, Thread.sleep().
+        // And I still have no clue to why it suddenly started failing...
+        try {
+            Thread.sleep(toWait * 1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         var firstProgramXpath = "section/div/ul/li[1]/article/a/div[2]/h2";
         var firstProgramName = mainSection.findElement(By.xpath(firstProgramXpath)).getText();
@@ -223,6 +235,7 @@ public class VGStepDefinitions {
         var executor = (JavascriptExecutor) driver;
         var fullscreen = (WebElement) executor.executeScript("var element = document.fullscreenElement; return element");
 
+        // fullscreen is something if in fullscreen, otherwise it is null
         assertNotNull(fullscreen, "We should be in fullscreen but we're not");
     }
 
